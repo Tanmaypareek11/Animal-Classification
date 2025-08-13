@@ -34,25 +34,47 @@ def predict_image(image_path):
 def home():
     return render_template("index.html")
 
-
 @app.route("/predict", methods=["POST"])
 def predict():
-    if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
+    try:
+        if "file" not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
 
-    file = request.files["file"]
-    if file.filename == "":
-        return jsonify({"error": "No selected file"}), 400
+        file = request.files["file"]
+        if file.filename == "":
+            return jsonify({"error": "No selected file"}), 400
 
-    filepath = os.path.join("static", file.filename)
-    file.save(filepath)
+        filepath = os.path.join("static", file.filename)
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        file.save(filepath)
 
-    prediction, accuracy = predict_image(filepath)
-    return jsonify({
-        "prediction": prediction,
-        "accuracy": accuracy,
-        "image_url": filepath
-    })
+        prediction, accuracy = predict_image(filepath)
+        return jsonify({
+            "prediction": prediction,
+            "accuracy": accuracy,
+            "image_url": filepath
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# @app.route("/predict", methods=["POST"])
+# def predict():
+#     if "file" not in request.files:
+#         return jsonify({"error": "No file uploaded"}), 400
+#
+#     file = request.files["file"]
+#     if file.filename == "":
+#         return jsonify({"error": "No selected file"}), 400
+#
+#     filepath = os.path.join("static", file.filename)
+#     file.save(filepath)
+#
+#     prediction, accuracy = predict_image(filepath)
+#     return jsonify({
+#         "prediction": prediction,
+#         "accuracy": accuracy,
+#         "image_url": filepath
+#     })
 
 
 if __name__ == "__main__":
