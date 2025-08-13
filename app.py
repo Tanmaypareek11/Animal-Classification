@@ -4,21 +4,20 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 import os
+import tempfile
 
 app = Flask(__name__)
 CORS(app)
-# Load your trained model
+
+# Load model
 model_path = os.path.join(os.path.dirname(__file__), "animal_classifier.h5")
 model = tf.keras.models.load_model(model_path)
 
-# Categories from your dataset
 categories = [
     'Bear', 'Bird', 'Cat', 'Cow', 'Deer', 'Dog', 'Dolphin',
     'Elephant', 'Giraffe', 'Horse', 'Kangaroo', 'Lion', 'Panda', 'Tiger'
 ]
 
-
-# Prediction function
 def predict_image(image_path):
     img = Image.open(image_path).convert("RGB")
     img = img.resize((224, 224))
@@ -28,7 +27,6 @@ def predict_image(image_path):
     index = int(np.argmax(predictions))
     accuracy = round(float(predictions[index] * 100), 2)
     return categories[index], accuracy
-
 
 @app.route("/")
 def home():
@@ -44,38 +42,17 @@ def predict():
         if file.filename == "":
             return jsonify({"error": "No selected file"}), 400
 
-        filepath = os.path.join("static", file.filename)
-        os.makedirs(os.path.dirname(filepath), exist_ok=True)
-        file.save(filepath)
+        # Use a temporary file (works safely on Render)
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as temp_file:
+            file.save(temp_file.name)
+            prediction, accuracy = predict_image(temp_file.name)
 
-        prediction, accuracy = predict_image(filepath)
         return jsonify({
             "prediction": prediction,
-            "accuracy": accuracy,
-            "image_url": filepath
+            "accuracy": accuracy
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-# @app.route("/predict", methods=["POST"])
-# def predict():
-#     if "file" not in request.files:
-#         return jsonify({"error": "No file uploaded"}), 400
-#
-#     file = request.files["file"]
-#     if file.filename == "":
-#         return jsonify({"error": "No selected file"}), 400
-#
-#     filepath = os.path.join("static", file.filename)
-#     file.save(filepath)
-#
-#     prediction, accuracy = predict_image(filepath)
-#     return jsonify({
-#         "prediction": prediction,
-#         "accuracy": accuracy,
-#         "image_url": filepath
-#     })
-
 
 if __name__ == "__main__":
     app.run(debug=True)
