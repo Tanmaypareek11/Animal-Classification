@@ -1,13 +1,15 @@
 from flask import Flask, render_template, request, jsonify
+from flask_cors import CORS
 import tensorflow as tf
 import numpy as np
 from PIL import Image
 import os
 
 app = Flask(__name__)
-
+CORS(app)
 # Load your trained model
-model = tf.keras.models.load_model("animal_classifier.h5")
+model_path = os.path.join(os.path.dirname(__file__), "animal_classifier.h5")
+model = tf.keras.models.load_model(model_path)
 
 # Categories from your dataset
 categories = [

@@ -4,3 +4,4 @@ gunicorn
 opencv-python
 Pillow
 numpy
+flask-cors
