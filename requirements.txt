@@ -1,4 +1,6 @@
-flask
+Flask
 tensorflow
-pillow
+gunicorn
+opencv-python
+Pillow
 numpy
