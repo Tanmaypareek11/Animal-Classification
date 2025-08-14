@@ -1,29 +1,43 @@
 import gradio as gr
-import pickle
-from PIL import Image
+from tensorflow.keras.models import load_model
 import numpy as np
+from PIL import Image
 
-# Load the model
-with open("animal_model.pkl", "rb") as f:
-    model = pickle.load(f)
+# Load model
+model = load_model("animal_classifier.h5")
 
-# Define prediction function
-def predict(image):
-    # Resize image (adjust size according to your model)
-    image = image.resize((64, 64))
-    # Convert to array and flatten if needed
-    image_array = np.array(image).reshape(1, -1)
-    # Make prediction
-    pred = model.predict(image_array)[0]
-    return pred
+# Class names
+categories = ['Bear', 'Bird', 'Cat', 'Cow', 'Deer', 'Dog', 'Dolphin',
+              'Elephant', 'Giraffe', 'Horse']
 
-# Build Gradio interface
+
+# Prediction function
+def predict_animal(img):
+    img_display = img.copy()
+
+    # Preprocess
+    img = img.resize((224, 224))
+    img_array = np.array(img) / 255.0
+    img_array = np.expand_dims(img_array, axis=0)
+
+    # Predict
+    prediction = model.predict(img_array)[0]  # probabilities
+    class_idx = np.argmax(prediction)
+    confidence = prediction[class_idx] * 100
+
+    # Return dictionary of probabilities for Gradio Label output
+    probs_dict = {categories[i]: float(prediction[i]) for i in range(len(categories))}
+
+    return img_display, f"Predicted: {categories[class_idx]} ({confidence:.2f}%)", probs_dict
+
+
+# Gradio interface
 iface = gr.Interface(
-    fn=predict,
+    fn=predict_animal,
     inputs=gr.Image(type="pil"),
-    outputs=gr.Label()
+    outputs=[gr.Image(), gr.Textbox(), gr.Label(num_top_classes=len(categories))],
+    title="Animal Classification",
+    description="Upload an image of an animal and the model will predict its class with confidence percentages."
 )
 
-# Launch (locally for testing)
-if __name__ == "__main__":
-    iface.launch()
+iface.launch()
