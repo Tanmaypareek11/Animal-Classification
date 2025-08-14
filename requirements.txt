@@ -1,5 +1,4 @@
-opencv-python
 gradio
-tensorflow
-pillow
 numpy
+pillow
+scikit-learn
