@@ -9,9 +9,10 @@ import tempfile
 app = Flask(__name__)
 CORS(app)
 
-# Load model
+# Load model in H5 format
 model_path = os.path.join(os.path.dirname(__file__), "animal_classifier.h5")
 model = tf.keras.models.load_model(model_path)
+
 
 categories = [
     'Bear', 'Bird', 'Cat', 'Cow', 'Deer', 'Dog', 'Dolphin',
