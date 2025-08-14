@@ -1,7 +1,5 @@
-Flask
-tensorflow
-gunicorn
 opencv-python
-Pillow
+gradio
+tensorflow
+pillow
 numpy
-flask-cors
