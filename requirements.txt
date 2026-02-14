@@ -1,4 +1,5 @@
-gradio
-tensorflow-cpu
-numpy
+gradio==4.44.0
+tensorflow==2.15.0
+numpy==1.26.4
 pillow
+python-3.10.13
