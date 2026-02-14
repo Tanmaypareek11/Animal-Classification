@@ -1,11 +1,12 @@
 import gradio as gr
-from tensorflow.keras.models import load_model
-import numpy as np
-from PIL importimport gradio as gr
 import numpy as np
 import logging
+import os
 from tensorflow.keras.models import load_model
 from PIL import Image
+import warnings
+warnings.filterwarnings("ignore")
+
 
 # ------------------------
 # Logging Setup
@@ -81,44 +82,11 @@ with gr.Blocks(theme=gr.themes.Soft()) as demo:
         outputs=[image_output, prediction_text, label_output]
     )
 
-demo.launch()
- Image
 
-# Load model
-model = load_model("animal_classifier.h5")
+port = int(os.environ.get("PORT", 7860))
 
-# Class names
-categories = ['Bear', 'Bird', 'Cat', 'Cow', 'Deer', 'Dog', 'Dolphin',
-              'Elephant', 'Giraffe', 'Horse']
-
-
-# Prediction function
-def predict_animal(img):
-    img_display = img.copy()
-
-    # Preprocess
-    img = img.resize((224, 224))
-    img_array = np.array(img) / 255.0
-    img_array = np.expand_dims(img_array, axis=0)
-
-    # Predict
-    prediction = model.predict(img_array)[0]  # probabilities
-    class_idx = np.argmax(prediction)
-    confidence = prediction[class_idx] * 100
-
-    # Return dictionary of probabilities for Gradio Label output
-    probs_dict = {categories[i]: float(prediction[i]) for i in range(len(categories))}
-
-    return img_display, f"Predicted: {categories[class_idx]} ({confidence:.2f}%)", probs_dict
-
-
-# Gradio interface
-iface = gr.Interface(
-    fn=predict_animal,
-    inputs=gr.Image(type="pil"),
-    outputs=[gr.Image(), gr.Textbox(), gr.Label(num_top_classes=len(categories))],
-    title="Animal Classification",
-    description="Upload an image of an animal and the model will predict its class with confidence percentages."
+demo.launch(
+    server_name="0.0.0.0",
+    server_port=port,
+    share=False
 )
-
-iface.launch()
